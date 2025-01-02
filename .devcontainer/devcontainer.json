@@ -25,9 +25,10 @@
               ],
               "settings": {
                 "eslint.alwaysShowStatus": true,
-      "editor.fontFamily": "Consolas, 'Courier New', monospace, hack, 'Hack Nerd Font Mono'",
-      "terminal.integrated.fontFamily": "Consolas, 'Hack Nerd Font Mono'",
-      "terminal.integrated.fontSize": 14
+                "editor.fontFamily": "'Fira Code', Consolas, 'Courier New', monospace, hack, 'Hack Nerd Font Mono'",
+                "editor.fontLigatures": true,
+                "terminal.integrated.fontFamily": "Consolas, 'Hack Nerd Font Mono'",
+                "terminal.integrated.fontSize": 14
               }
         }
     },
