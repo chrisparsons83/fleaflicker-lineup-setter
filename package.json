@@ -1,0 +1,19 @@
+{
+  "name": "fleaflicker-helper",
+  "version": "1.0.0",
+  "description": "Firefox extension to interact with Fleaflicker",
+  "main": "dist/background/background.js",
+  "scripts": {
+    "build:chrome": "BROWSER=chrome npm run build-manifest && tsc",
+    "build:firefox": "BROWSER=firefox npm run build-manifest && tsc",
+    "build-manifest": "node build-manifest.js",
+    "watch": "tsc --watch",
+    "watch:firefox": "web-ext run --source-dir=dist"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.290",
+    "@types/firefox-webext-browser": "^120.0.4",
+    "typescript": "^5.0.0",
+    "web-ext": "^8.3.0"
+  }
+}
