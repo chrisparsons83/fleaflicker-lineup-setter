@@ -1,3 +1,24 @@
+// List of positions
+const positions = ['C', 'LW', 'RW', 'W', 'F', 'D', 'G'] as const;
+
+// Type based on the list of positions
+type Position = typeof positions[number];
+
+// Set of valid positions for quick lookups
+const positionSet = new Set(positions);
+
+// Type guard to check if a value is a valid Position
+function isPosition(value: any): value is Position {
+  return positionSet.has(value);
+}
+
+type Player = {
+  name: string,
+  averagePoints: number,
+  formFieldId: string
+  positions: Position[]
+}
+
 const currentURL = window.location.href;
 
 // TODO: Add other sports as it's confirmed that it works with them
@@ -15,6 +36,11 @@ if (isTargetPage) {
   buttonToday.textContent = 'Autofill Lineup for Today';
   buttonToday.className = 'btn btn-primary';
   buttonToday.id = 'ffls-autofill-today';
+
+  const buttonWeek = document.createElement('button');
+  buttonWeek.textContent = 'Autofill Lineup for Week';
+  buttonWeek.className = 'btn btn-primary';
+  buttonWeek.id = 'ffls-autofill-week';
   
   // Add a click event to the button (example)
   buttonToday.addEventListener('click', async (e) => {
@@ -26,9 +52,10 @@ if (isTargetPage) {
     queryParams.set('statType', '0');
     urlObject.search = queryParams.toString();
 
-    // TODO: Make this an actual players object
-    const players: string[] = [];
+    const players: Player[] = [];
 
+    // I might want to do this all within this one catch so I can submit right from it?
+    // Can I do that?
     try {
       const response = await fetch(urlObject.href);
 
@@ -39,9 +66,31 @@ if (isTargetPage) {
       const statsPage = await response.text();
       const parser = new DOMParser();
       const doc = parser.parseFromString(statsPage, 'text/html');
-      const players = doc.querySelectorAll('#body-center-main table tbody tr');
+      const domPlayers = doc.querySelectorAll('#body-center-main table tbody tr');
       // Make sure we set all players to the bench to start so that we can add the players positions
       // easier.
+      for (const domPlayer of domPlayers) {
+        const firstCellText = domPlayer.firstElementChild?.textContent?.trim();
+        // If this is Injured Reserve, we can break because we don't care about anything after
+        if (firstCellText === 'Injured Reserve') {
+          break;
+        }
+
+        // If there's only one cell anyhow, this is just a spacer and we can continue onto the next
+        // row
+        if (domPlayer.children.length === 1) {
+          continue;
+        }
+
+        // Build the player object and add to the array
+        players.push({
+          name: domPlayer.querySelector('.player-text')?.textContent?.trim() || '',
+          averagePoints: Number(domPlayer.querySelector('td:nth-child(11) .fp')?.textContent?.trim()),
+          formFieldId: domPlayer.querySelector('td:last-child .form-control')?.getAttribute('name') || '',
+          positions: domPlayer.querySelector('.position')?.textContent?.trim().split('/').filter(isPosition) || []
+        });
+      }
+
       console.log({players});
     } catch (error) {
       console.log(error);
@@ -59,5 +108,6 @@ if (isTargetPage) {
   const autofillLineupButton = document.querySelector('#ffls-autofill-today')
   if (saveLineupButton && !autofillLineupButton) {
     saveLineupButton.appendChild(buttonToday);
+    saveLineupButton.appendChild(buttonWeek);
   }
 }
