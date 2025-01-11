@@ -15,5 +15,8 @@
     "@types/firefox-webext-browser": "^120.0.4",
     "typescript": "^5.0.0",
     "web-ext": "^8.3.0"
+  },
+  "dependencies": {
+    "zod": "^3.24.1"
   }
 }

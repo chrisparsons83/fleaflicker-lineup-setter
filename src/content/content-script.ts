@@ -1,3 +1,12 @@
+// import z from 'zod';
+
+// const RosterApiSchema = z.object({
+//   rosterPositions: z.object({
+//     label: z.string(),
+//     start: z.number(),
+//   }).array()
+// })
+
 // List of positions
 const positions = ['C', 'LW', 'RW', 'W', 'F', 'D', 'G'] as const;
 
@@ -18,6 +27,8 @@ type Player = {
   formFieldId: string
   positions: Position[]
 }
+
+type Roster = Record<Position, (Player | null)[]>
 
 const currentURL = window.location.href;
 
@@ -53,10 +64,34 @@ if (isTargetPage) {
     urlObject.search = queryParams.toString();
 
     const players: Player[] = [];
+    const initialPositionRecord = positions.reduce(
+      (acc, position) => {
+        if (isPosition(position)) {
+          acc[position] = [];
+        }
+        return acc;
+      },
+      {} as Roster
+    );
+    console.log({initialPositionRecord});
 
     // I might want to do this all within this one catch so I can submit right from it?
     // Can I do that?
     try {
+      // Get roster rules
+      const rosterData = new URLSearchParams();
+      rosterData.append('sport', 'NHL');
+      rosterData.append('league_id', '12086');
+      const rosterResponse = await fetch('https://www.fleaflicker.com/api/FetchLeagueRules?' + rosterData.toString())
+      const rosterResponseData = await rosterResponse.json();
+      // const rosterResponseData = RosterApiSchema.parse(rawRosterResponseData)
+      for (const rosterPosition of rosterResponseData.rosterPositions) {
+        console.log({label: rosterPosition.label, start: rosterPosition.start});
+        if (isPosition(rosterPosition.label)) {
+
+        }
+      }
+
       const response = await fetch(urlObject.href);
 
       if (!response.ok) {
@@ -81,6 +116,11 @@ if (isTargetPage) {
         if (domPlayer.children.length === 1) {
           continue;
         }
+
+        const positionLocked = domPlayer.querySelector('td:last-child .label');
+        const position = positionLocked ? positionLocked.textContent?.trim() : domPlayer.querySelector('td:last-child .form-control')?.firstElementChild?.textContent?.trim();
+
+        console.log({positionLocked: !!positionLocked, position});
 
         // Build the player object and add to the array
         players.push({
